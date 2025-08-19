@@ -87,7 +87,7 @@ void reap_background_finished(void) {
 void prompt(void)
 {
   // ## Remove 'fprintf' statement for submission
-  fprintf(stdout, "\n msh> ");
+  // fprintf(stdout, "\n msh> ");
   fflush(stdout);
 }
 
