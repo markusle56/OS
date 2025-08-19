@@ -21,16 +21,21 @@
 #define NV 20			/* max number of command tokens */
 #define NL 100			/* input buffer size */
 char    line[NL];	    /* command input buffer */
-#define MAX_JOBS 10
+#define MAX_JOBS 10     /* max number of background jobs*/
 
+// Define job struct to store background job
 struct job {
     pid_t pid;
     char cmd[NL];
 };
 
+// Initialise jobs and job_count to track the background jobs
 struct job jobs[MAX_JOBS];
 int job_count = 0;
 
+// Helper function to handle background job
+
+// Add job into the jobs list
 int add_job(pid_t pid, const char *cmd) {
     if (job_count >= MAX_JOBS) return -1;
     jobs[job_count].pid = pid;
@@ -39,15 +44,20 @@ int add_job(pid_t pid, const char *cmd) {
     job_count++;
     return job_count; // job id is 1-based index
 }
-
+// Find the job index by the given pid in the jobs list 
 int find_job_index_by_pid(pid_t pid) {
-    for (int i = 0; i < job_count; i++) if (jobs[i].pid == pid) return i;
+    for (int i = 0; i < job_count; i++) {
+        if (jobs[i].pid == pid) return i;
+    };
     return -1;
 }
 
+// Remove the job by the given index
 void remove_job_by_index(int idx) {
     if (idx < 0 || idx >= job_count) return;
-    for (int i = idx; i < job_count - 1; i++) jobs[i] = jobs[i+1];
+    for (int i = idx; i < job_count - 1; i++) {  // Shift the all the remain jobs to the left of the list 
+        jobs[i] = jobs[i+1];
+    };
     job_count--;
 }
 
@@ -55,6 +65,7 @@ void remove_job_by_index(int idx) {
 void reap_background_finished(void) {
     int status;
     pid_t p;
+    // waitpid(-1, &status, WNOHANG) to wait for any child process to end, return its pid and store status value in status variable
     while ((p = waitpid(-1, &status, WNOHANG)) > 0) {
         int idx = find_job_index_by_pid(p);
         if (idx >= 0) {
@@ -87,7 +98,7 @@ void prompt(void)
 int main(int argk, char *argv[], char *envp[])
 {
     int     frkRtnVal;          /* value returned by fork sys call */
-    int     wpid;		        /* value returned by wait */
+    // int     wpid;		        /* value returned by wait */
     char    *v[NV];	            /* array of pointers to command line tokens */
     char    *sep = " \t\n";     /* command line token separators    */
     int     i;		            /* parse index */
