@@ -3,15 +3,17 @@
 #include "unistd.h"
 #include <stdlib.h>
 
-void handle_SIGHUP() {
+void handle_SIGHUP(int sig) {
     // Function to handle HUP signal.
     // Whenever it receive HUP, the program will prinout "Ouch!" and continue
-    write(STDOUT_FILENO, "Ouch!\n", 7);
+    (void)sig;
+    write(STDOUT_FILENO, "Ouch!\n", 6);
 }
-void handle_SIGINT() {
+void handle_SIGINT(int sig) {
     // Function to handle INT signal.
     // Whenever it receive INT, the program will prinout "Yeah!" and continue
-    write(STDOUT_FILENO, "Yeah!\n", 7);
+    (void)sig;
+    write(STDOUT_FILENO, "Yeah!\n", 6);
 }
 int main(int argc, char *argv[]) {
     // Init the default signal handler for SIGHUP and SIGINT by our customise function 
