@@ -6,12 +6,12 @@
 void handle_SIGHUP() {
     // Function to handle HUP signal.
     // Whenever it receive HUP, the program will prinout "Ouch!" and continue
-    write(STDOUT_FILENO, "Ouch!", 6);
+    write(STDOUT_FILENO, "Ouch!\n", 7);
 }
 void handle_SIGINT() {
     // Function to handle INT signal.
     // Whenever it receive INT, the program will prinout "Yeah!" and continue
-    write(STDOUT_FILENO, "Yeah!\n", 6);
+    write(STDOUT_FILENO, "Yeah!\n", 7);
 }
 int main(int argc, char *argv[]) {
     // Init the default signal handler for SIGHUP and SIGINT by our customise function 
