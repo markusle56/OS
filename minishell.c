@@ -5,8 +5,16 @@
  --------------------------------------------------------------------
    File			: minishell.c
    Compiler/System	: gcc/linux
-
 ********************************************************************/
+
+
+/*
+Note:
+This file has been modified to align with the assignment specification:
+    - Implements built-in commands: cd, exit, and quit (cd uses HOME if no path).
+    - Adds a small job table to manage background jobs and print when they finish.
+    - Calls perror() after each system call (fork, execvp, waitpid, chdir; and fgets on error).
+ */
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -22,7 +30,7 @@
 char    line[NL];	    /* command input buffer */
 #define MAX_JOBS 10     /* max number of background jobs*/
 
-// Define job struct to s   tore background job
+// Define job struct to store background job
 struct job {
     int   job_id;
     pid_t pid;
@@ -78,6 +86,7 @@ void reap_background_finished(void) {
             remove_job_by_index(idx);
         }
     }
+    // ECHILD = no children left to reap: normal termination for a reaper
     if (p == -1 && errno != ECHILD) {
         perror("waitpid"); 
     }
@@ -112,7 +121,6 @@ int main(int argk, char *argv[], char *envp[])
         reap_background_finished();
         prompt();
         fgets(line, NL, stdin);
-        // fflush(stdin);
         reap_background_finished();
 
         // This if() required for gradescope
@@ -148,6 +156,7 @@ int main(int argk, char *argv[], char *envp[])
         int argc = i;   /* number of tokens */
         if (v[0] == NULL) continue; /* empty line safety */ 
 
+        // Handle cd command 
         if (strcmp(v[0], "cd") == 0) {
             const char *dest = NULL;
 
@@ -163,17 +172,19 @@ int main(int argk, char *argv[], char *envp[])
             }
             continue;  
         }
-
+        
+        // Handle exit and quite command 
         if (strcmp(v[0], "exit") == 0 || strcmp(v[0], "quit") == 0) {
             reap_background_finished();
             return 0;
         }
 
+        // If last token is '&', run in background: remove it from argv so execvp doesn't see it
         int background = 0;
         if (argc > 0 && strcmp(v[argc - 1], "&") == 0) {
             background = 1;
-            v[argc - 1] = NULL;  /* remove '&' from argv */
-            argc--;              /* optional: keep argc consistent */
+            v[argc - 1] = NULL;  //remove '&' from argv
+            argc--;              //keep argc consistent
         }
 
         char cmdline_for_job[NL] = {0};
@@ -214,7 +225,7 @@ int main(int argk, char *argv[], char *envp[])
                     fflush(stdout);
                 }       
             } else {
-                /* foreground: wait until child finishes */
+                // wait until child finishes
                 int status;
                 pid_t wpid;
                 do {
